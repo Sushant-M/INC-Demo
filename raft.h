@@ -72,10 +72,10 @@ struct raft_server{
     //The node for which this node voted in the curent term. PERSISTED.
     int voted_for;
 
-		//total number of votes granted this term.
-		int total_votes_granted;
+	//total number of votes granted this term.
+	int total_votes_granted;
 
-		//Pointer to the log
+	//Pointer to the log
     void *log;
 
     //Commit Index. Till what index have the entries in the log been added to the store.
@@ -146,9 +146,6 @@ typedef log_entry msg_entry;
 struct request_vote_msg
 {
 
-	//For communication purposes
-	int type_msg;
-
 	//Current term of the server
 	int term;
 
@@ -171,10 +168,6 @@ typedef struct connection_data
 
 struct request_vote_response_msg
 {
-
-	//For communication purposes
-	int type_msg;
-
 	//The server sending the response
 	//raft_server *self;
 	//ID of the server sending the response
@@ -190,10 +183,6 @@ struct request_vote_response_msg
 
 struct append_entries_request_msg
 {
-
-	//For communication purposes
-	int type_msg;
-
 	//The leaders term, the node sending out this sort of message has to be the leader.
 	int term;
 
@@ -216,10 +205,6 @@ struct append_entries_request_msg
 
 struct append_entries_response_msg
 {
-
-	//For communication purposes
-	int type_msg;
-	
 	//Term, if the other node has to step down to follower and we're to change to leader
 	int term;
 

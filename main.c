@@ -30,6 +30,11 @@ typedef struct node_info_link node_info_link;
 typedef struct node_info_list node_info_list;
 typedef struct node_info_local node_info_local;
 
+struct package{
+	int type;
+	void* structure;
+};
+
 
 struct node_info_link{
 	node_info* data;
@@ -148,6 +153,21 @@ void timeout_routine(int t){
 }
 
 
+void handle_client_message(int socket_var){
+	if(NULL == socket_var){
+		printf("Invalid arument, exiting\n");
+	}
+	int read_size;
+	char *message;
+	while((read_size = recv(socket_var, message, 2000,0)) >0){
+		convert_and_handle_raft_msg(message);
+	}
+	if(read_size == 0){
+		printf("Client disonnected.\n");
+	}
+}
+
+
 //Method to listen on our particular ip and address
 int bind_and_handle_recieving_messages(){
 	pthread_t thread_array[3];
@@ -168,8 +188,9 @@ int bind_and_handle_recieving_messages(){
 
 	listen(listenfd, MAX_CONNECTIONS);
 
-	struct sockaddr_in client_address;
 	client_len = sizeof(client_address);
+
+	int client_socket;
 
 	while(client_socket = accept(listenfd,(struct sockaddr *)&client_address,(socklen_t*)&client_len)){
 		int thread_status;
@@ -183,13 +204,9 @@ int bind_and_handle_recieving_messages(){
 	
 }
 
-void handle_client_message(int socket_var){
-	if(NULL == socket_var){
-		printf("Invalid arument, exiting\n");
-	}
-	int read_size;
-	char *message;
-	
+
+void convert_and_handle_raft_msg(char *msg){
+
 }
 
 int send_message(char *message){
@@ -198,14 +215,7 @@ int send_message(char *message){
 		return 0;
 	}
 	
-
 }
-
-void *connection_handler(){
-
-}
-
-
 
 char* request_vote_msg_packer(request_vote_msg msg){
 	/*if(NULL == msg){
@@ -325,14 +335,17 @@ int main(int args, char *argv[]){
 		
 		int total_count = get_no_nodes();
 		node_info* temp;
+		printf("Debug 1\n");
 		for(int i =0; i<total_count; i++){
+			printf("Something\n");
 			temp = read_node_file(i);
-			temp->isAlive = false;
+			//temp->isAlive = false;
 			ip_add[i] = temp->ip;
 			port[i] = temp->port;
 			alias[i] = temp->alias;
-			add_node(temp);
+			//add_node(temp);
 		}
+		printf("debug 2\n");
 		for(int j =0; j<total_count ; j++){
 			//Just some debugging information!
 			printf("%s %d %s\n",ip_add[j], port[j] ,alias[j]);
@@ -341,6 +354,7 @@ int main(int args, char *argv[]){
 				our_index_temporary = j;
 			}
 		}
+		printf("debug 3\n");
 		
 		//Calling method to keep the no_nodes variable updated on a different thread
 		int check_nodes_thread;
@@ -365,7 +379,10 @@ int main(int args, char *argv[]){
 		//int lol = timeout_routine(7);
 		int t=7;
 		rc = pthread_create(&first, NULL, timeout_routine, t);
-		
+		if(rc){
+			printf("Error on creating timeout thread, exiting code is %d\n", rc);
+		}
+
 		//Clearing memory.
 		//pthread_attr_destroy(&attr);
 
